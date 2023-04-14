@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.net.URL
@@ -46,8 +47,13 @@ class CoursesAdapter(context: Context, datalist: List<DataItem>, listener: Liste
     override fun onBindViewHolder(holder: CourseViewHolder, position: Int) {
         holder.imageItem.setImageResource(R.drawable.food)
 
-        val getImage = GetImageAsyncTask(this.context, holder.imageItem)
-        getImage.execute(dataList[position].src)
+        /*val getImage = GetImageAsyncTask(this.context, holder.imageItem)
+        getImage.execute(dataList[position].src)*/
+        Glide.with(holder.imageItem)
+            .load(dataList[position].src)
+            .thumbnail(Glide.with(holder.imageItem).load(R.drawable.food))
+            .fitCenter()
+            .into(holder.imageItem);
 
         holder.textItem.text = dataList[position].text
         holder.listenOnClick(dataList[position], position, listener)

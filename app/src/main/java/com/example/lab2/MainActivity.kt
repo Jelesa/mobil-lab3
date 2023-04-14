@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity(), CoursesAdapter.Listener {
 
             for (i in 0 until categoriesList.size)
             {
-                result.add(DataItem(categoriesList[i].id, categoriesList[i].name, ""))
+                result.add(DataItem(categoriesList[i].id, categoriesList[i].name, categoriesList[i].src))
             }
 
             val adapter: CoursesAdapter = CoursesAdapter(this, result, this)

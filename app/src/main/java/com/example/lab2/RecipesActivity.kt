@@ -52,7 +52,7 @@ class RecipesActivity : AppCompatActivity(), CoursesAdapter.Listener {
 
             for (i in 0 until recipesCategoriesList.size)
             {
-                result.add(DataItem(recipesCategoriesList[i].id, recipesCategoriesList[i].nameRecipe, ""))
+                result.add(DataItem(recipesCategoriesList[i].id, recipesCategoriesList[i].nameRecipe, recipesCategoriesList[i].src))
             }
 
             val adapter: CoursesAdapter = CoursesAdapter(this, result, this)

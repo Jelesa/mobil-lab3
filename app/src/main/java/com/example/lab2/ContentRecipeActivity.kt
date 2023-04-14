@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.room.Room
+import com.bumptech.glide.Glide
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONException
@@ -96,8 +97,11 @@ class ContentRecipeActivity : AppCompatActivity() {
             this.activity!!.textName.text = result.name
             this.activity!!.textContent.text = result.instruction
 
-            val getImage = GetImageAsyncTask(this.context!!, this.activity!!.imagePhoto)
-            getImage.execute(result.src)
+            Glide.with(this.activity!!.imagePhoto)
+                .load(result.src)
+                .thumbnail(Glide.with(this.activity!!.imagePhoto).load(R.drawable.food))
+                .fitCenter()
+                .into(this.activity!!.imagePhoto);
         }
     }
 }
