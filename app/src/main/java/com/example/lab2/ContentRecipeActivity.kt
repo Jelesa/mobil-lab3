@@ -1,10 +1,13 @@
 package com.example.lab2
 
+import android.content.Context
 import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.room.Room
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONException
@@ -26,11 +29,33 @@ class ContentRecipeActivity : AppCompatActivity() {
         this.textContent = findViewById(R.id.textRecieps)
         this.imagePhoto = findViewById(R.id.photoDishes)
 
-        val recipe = GetDataRecipes(this)
-        recipe.execute(id)
+        var database = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "recipe_database"
+        ).build()
+
+        if (Network().isNetworkAvailable(this))
+        {
+            val recipe = GetDataRecipes(this, this)
+            recipe.execute(id)
+        }
+        else
+        {
+            var recipe: Recipe = Recipe("", "", "", "")
+            var threadGetCategories = Thread {
+                recipe = database.getDao().getRecipeById(id.toString())
+            }
+
+            threadGetCategories.start()
+            threadGetCategories.join()
+
+            this.textName.text = recipe.name
+            this.textContent.text = recipe.instruction
+            this.imagePhoto.setImageResource(R.drawable.food)
+        }
     }
 
-    class GetDataRecipes(private var activity: ContentRecipeActivity?) : AsyncTask<String, Void, InfoRecipe>() {
+    class GetDataRecipes(private var activity: ContentRecipeActivity?, private var context: Context) : AsyncTask<String, Void, InfoRecipe>() {
         override fun doInBackground(vararg p0: String): InfoRecipe {
             var resultJSON: String? = null;
             var client: OkHttpClient = OkHttpClient();
@@ -71,7 +96,7 @@ class ContentRecipeActivity : AppCompatActivity() {
             this.activity!!.textName.text = result.name
             this.activity!!.textContent.text = result.instruction
 
-            val getImage = GetImageAsyncTask(this.activity!!.imagePhoto)
+            val getImage = GetImageAsyncTask(this.context!!, this.activity!!.imagePhoto)
             getImage.execute(result.src)
         }
     }

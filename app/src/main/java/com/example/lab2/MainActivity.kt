@@ -38,22 +38,44 @@ class MainActivity : AppCompatActivity(), CoursesAdapter.Listener {
             AppDatabase::class.java, "recipe_database"
         ).build()
 
-        if (isNetworkAvailable(this))
+        if (Network().isNetworkAvailable(this))
         {
             //var database = AppDatabase.getDatabase(this)
             var tmp: Int
             Thread{
                 tmp = this.database.getDao().getCountCategories()
+                if (tmp == 0)
+                {
+                    var downloader = DownloadingRecipes(this)
+                    downloader.downloadingCategories()
+                    downloader.downloadingReciepCategories()
+                    downloader.downloadingRecieps()
+                }
+            }.start()
 
-            }
-
-            Log.w("Network", "true")
-            var task: GetDataCategories  = GetDataCategories(this)
+            var task: GetDataCategories  = GetDataCategories(this, this)
             task.execute("https://www.themealdb.com/api/json/v1/1/categories.php")
         }
         else
         {
             Log.w("Network", "false")
+            var categoriesList: List<Categories> = listOf()
+            var threadGetCategories = Thread {
+                categoriesList = this.database.getDao().getAllCategories()
+            }
+
+            threadGetCategories.start()
+            threadGetCategories.join()
+
+            var result: MutableList<DataItem> = mutableListOf()
+
+            for (i in 0 until categoriesList.size)
+            {
+                result.add(DataItem(categoriesList[i].id, categoriesList[i].name, ""))
+            }
+
+            val adapter: CoursesAdapter = CoursesAdapter(this, result, this)
+            categories.adapter = adapter
         }
 
     }
@@ -64,34 +86,9 @@ class MainActivity : AppCompatActivity(), CoursesAdapter.Listener {
         startActivity(intent)
     }
 
-    fun isNetworkAvailable(context: Context?): Boolean {
-        if (context == null) return false
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            if (capabilities != null) {
-                when {
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                        return true
-                    }
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                        return true
-                    }
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-                        return true
-                    }
-                }
-            }
-        } else {
-            val activeNetworkInfo = connectivityManager.activeNetworkInfo
-            if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
-                return true
-            }
-        }
-        return false
-    }
 
-    class GetDataCategories(private var activity: MainActivity?) : AsyncTask<String, Void, MutableList<DataItem>>() {
+
+    class GetDataCategories(private var activity: MainActivity?, private  var context: Context?) : AsyncTask<String, Void, MutableList<DataItem>>() {
         override fun doInBackground(vararg p0: String): MutableList<DataItem> {
             var resultJSON: String? = null;
             var client: OkHttpClient = OkHttpClient();
@@ -124,30 +121,13 @@ class MainActivity : AppCompatActivity(), CoursesAdapter.Listener {
                 e.printStackTrace()
             }
 
-
             return result
         }
 
         override fun onPostExecute(result:  MutableList<DataItem>) {
             super.onPostExecute(result)
-            val adapter: CoursesAdapter = CoursesAdapter(result, this.activity!!)
+            val adapter: CoursesAdapter = CoursesAdapter(this.context!!, result, this.activity!!)
             this.activity?.categories?.adapter = adapter
-
-            var countCategory = 0
-            Thread{
-                countCategory = activity!!.database.getDao().getCountCategories()
-            }
-            if (countCategory == 0)
-            {
-                Log.w("thread", "ne zero")
-                //for (i in 0 until result.size) {
-                Thread {
-                    activity!!.database.getDao()
-                        .insertCategories(Categories(result[0].id, result[0].text, result[0].src))
-                }
-                // }
-            }
-
         }
     }
 

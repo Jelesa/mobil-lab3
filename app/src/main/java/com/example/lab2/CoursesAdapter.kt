@@ -1,5 +1,6 @@
 package com.example.lab2
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.AsyncTask
@@ -15,10 +16,11 @@ import okhttp3.Request
 import java.net.URL
 
 
-class CoursesAdapter(datalist: List<DataItem>, listener: Listener) : RecyclerView.Adapter<CoursesAdapter.CourseViewHolder>() {
+class CoursesAdapter(context: Context, datalist: List<DataItem>, listener: Listener) : RecyclerView.Adapter<CoursesAdapter.CourseViewHolder>() {
 
     private var dataList: List<DataItem> = datalist
     private var listener = listener
+    private var context = context
     //private var dataList: List<String> = datalist
 
     override fun getItemCount(): Int {
@@ -44,7 +46,7 @@ class CoursesAdapter(datalist: List<DataItem>, listener: Listener) : RecyclerVie
     override fun onBindViewHolder(holder: CourseViewHolder, position: Int) {
         holder.imageItem.setImageResource(R.drawable.food)
 
-        val getImage = GetImageAsyncTask(holder.imageItem)
+        val getImage = GetImageAsyncTask(this.context, holder.imageItem)
         getImage.execute(dataList[position].src)
 
         holder.textItem.text = dataList[position].text
