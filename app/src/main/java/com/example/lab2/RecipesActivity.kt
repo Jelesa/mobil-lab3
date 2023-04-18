@@ -18,7 +18,7 @@ import java.net.URL
 class RecipesActivity : AppCompatActivity(), CoursesAdapter.Listener {
 
     lateinit var recipes: RecyclerView
-
+    lateinit var database: AppDatabase
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recipes)
@@ -28,35 +28,20 @@ class RecipesActivity : AppCompatActivity(), CoursesAdapter.Listener {
         this.recipes = findViewById(R.id.recyclerViewRecipers)
         this.recipes.layoutManager = LinearLayoutManager(this)
 
-        var database = Room.databaseBuilder(
+        this.database = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "recipe_database"
         ).build()
 
         if (Network().isNetworkAvailable(this))
         {
-            var task: RecipesActivity.GetDataRecipes = RecipesActivity.GetDataRecipes(this, this)
+            var task: GetDataRecipes = GetDataRecipes(this, this)
             task.execute(name)
         }
         else
         {
-            var recipesCategoriesList: List<RecipesCategories> = listOf()
-            var threadGetCategories = Thread {
-                recipesCategoriesList = database.getDao().getAllRecipesCategory(name)
-            }
-
-            threadGetCategories.start()
-            threadGetCategories.join()
-
-            var result: MutableList<DataItem> = mutableListOf()
-
-            for (i in 0 until recipesCategoriesList.size)
-            {
-                result.add(DataItem(recipesCategoriesList[i].id, recipesCategoriesList[i].nameRecipe, recipesCategoriesList[i].src))
-            }
-
-            val adapter: CoursesAdapter = CoursesAdapter(this, result, this)
-            recipes.adapter = adapter
+            var getRecipes = GetDataRecipesCategoriesDatabase(this, this)
+            getRecipes.execute(name)
         }
     }
 
@@ -106,6 +91,30 @@ class RecipesActivity : AppCompatActivity(), CoursesAdapter.Listener {
             super.onPostExecute(result)
             val adapter: CoursesAdapter = CoursesAdapter(this.context!!, result, this.activity!!)
             this.activity!!.recipes.adapter = adapter
+        }
+    }
+
+    class GetDataRecipesCategoriesDatabase(private var activity: RecipesActivity?, private  var context: Context?): AsyncTask<String, Void, MutableList<DataItem>>()
+    {
+        override fun doInBackground(vararg params: String): MutableList<DataItem> {
+            var recipesCategoriesList: List<RecipesCategories> = listOf()
+            recipesCategoriesList = this.activity!!.database.getDao().getAllRecipesCategory(params[0])
+
+            var result: MutableList<DataItem> = mutableListOf()
+
+            for (i in 0 until recipesCategoriesList.size)
+            {
+                result.add(DataItem(recipesCategoriesList[i].id, recipesCategoriesList[i].nameRecipe, recipesCategoriesList[i].src))
+            }
+
+            return result
+        }
+
+        override fun onPostExecute(result: MutableList<DataItem>) {
+            super.onPostExecute(result)
+
+            val adapter: CoursesAdapter = CoursesAdapter(this.context!!, result, this.activity!!)
+            this.activity?.recipes?.adapter = adapter
         }
     }
 

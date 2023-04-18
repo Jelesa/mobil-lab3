@@ -19,6 +19,7 @@ class ContentRecipeActivity : AppCompatActivity() {
     lateinit var textContent: TextView
     lateinit var imagePhoto: ImageView
     lateinit var textName: TextView
+    lateinit var database: AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +31,7 @@ class ContentRecipeActivity : AppCompatActivity() {
         this.textContent = findViewById(R.id.textRecieps)
         this.imagePhoto = findViewById(R.id.photoDishes)
 
-        var database = Room.databaseBuilder(
+        this.database = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "recipe_database"
         ).build()
@@ -42,17 +43,8 @@ class ContentRecipeActivity : AppCompatActivity() {
         }
         else
         {
-            var recipe: Recipe = Recipe("", "", "", "")
-            var threadGetCategories = Thread {
-                recipe = database.getDao().getRecipeById(id.toString())
-            }
-
-            threadGetCategories.start()
-            threadGetCategories.join()
-
-            this.textName.text = recipe.name
-            this.textContent.text = recipe.instruction
-            this.imagePhoto.setImageResource(R.drawable.food)
+            var getRecipe = GetDataRecipeDatabase(this, this)
+            getRecipe.execute(id)
         }
     }
 
@@ -104,4 +96,30 @@ class ContentRecipeActivity : AppCompatActivity() {
                 .into(this.activity!!.imagePhoto);
         }
     }
+
+    class GetDataRecipeDatabase(private var activity: ContentRecipeActivity?, private  var context: Context?): AsyncTask<String, Void, InfoRecipe>()
+    {
+        override fun doInBackground(vararg params: String): InfoRecipe {
+            var recipe: Recipe = Recipe("", "", "", "")
+            recipe = this.activity!!.database.getDao().getRecipeById(params[0])
+
+            var result: InfoRecipe = InfoRecipe(recipe.name, recipe.instruction, recipe.src)
+
+            return result
+        }
+
+        override fun onPostExecute(result: InfoRecipe) {
+            super.onPostExecute(result)
+
+            this.activity!!.textName.text = result.name
+            this.activity!!.textContent.text = result.instruction
+
+            Glide.with(this.activity!!.imagePhoto)
+                .load(result.src)
+                .thumbnail(Glide.with(this.activity!!.imagePhoto).load(R.drawable.food))
+                .fitCenter()
+                .into(this.activity!!.imagePhoto);
+        }
+    }
+
 }

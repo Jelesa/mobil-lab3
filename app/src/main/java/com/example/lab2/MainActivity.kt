@@ -41,41 +41,16 @@ class MainActivity : AppCompatActivity(), CoursesAdapter.Listener {
         if (Network().isNetworkAvailable(this))
         {
             //var database = AppDatabase.getDatabase(this)
-            var tmp: Int
-            Thread{
-                tmp = this.database.getDao().getCountCategories()
-                if (tmp == 0)
-                {
-                    var downloader = DownloadingRecipes(this)
-                    downloader.downloadingCategories()
-                    downloader.downloadingReciepCategories()
-                    downloader.downloadingRecieps()
-                }
-            }.start()
+            var download = DownloadDatabaseAsyncTask(this, this)
+            download.execute()
 
             var task: GetDataCategories  = GetDataCategories(this, this)
             task.execute("https://www.themealdb.com/api/json/v1/1/categories.php")
         }
         else
         {
-            Log.w("Network", "false")
-            var categoriesList: List<Categories> = listOf()
-            var threadGetCategories = Thread {
-                categoriesList = this.database.getDao().getAllCategories()
-            }
-
-            threadGetCategories.start()
-            threadGetCategories.join()
-
-            var result: MutableList<DataItem> = mutableListOf()
-
-            for (i in 0 until categoriesList.size)
-            {
-                result.add(DataItem(categoriesList[i].id, categoriesList[i].name, categoriesList[i].src))
-            }
-
-            val adapter: CoursesAdapter = CoursesAdapter(this, result, this)
-            categories.adapter = adapter
+            var getCategories = GetDataCategoriesDatabase(this, this)
+            getCategories.execute()
         }
 
     }
@@ -131,5 +106,45 @@ class MainActivity : AppCompatActivity(), CoursesAdapter.Listener {
         }
     }
 
+    class DownloadDatabaseAsyncTask(private var activity: MainActivity?, private  var context: Context?): AsyncTask<Void, Void, Void>()
+    {
+        override fun doInBackground(vararg params: Void?): Void? {
+            var tmp = this.activity!!.database.getDao().getCountCategories()
+            if (tmp == 0)
+            {
+                var downloader = DownloadingRecipes(this.context!!)
+                downloader.downloadingCategories()
+                downloader.downloadingReciepCategories()
+                downloader.downloadingRecieps()
+            }
+
+            return null
+        }
+    }
+
+    class GetDataCategoriesDatabase(private var activity: MainActivity?, private  var context: Context?): AsyncTask<Void, Void, MutableList<DataItem>>()
+    {
+        override fun doInBackground(vararg params: Void?): MutableList<DataItem> {
+            var categoriesList: List<Categories> = listOf()
+
+            categoriesList = this.activity!!.database.getDao().getAllCategories()
+
+            var result: MutableList<DataItem> = mutableListOf()
+
+            for (i in 0 until categoriesList.size)
+            {
+                result.add(DataItem(categoriesList[i].id, categoriesList[i].name, categoriesList[i].src))
+            }
+
+            return result
+        }
+
+        override fun onPostExecute(result: MutableList<DataItem>) {
+            super.onPostExecute(result)
+
+            val adapter: CoursesAdapter = CoursesAdapter(this.context!!, result, this.activity!!)
+            this.activity?.categories?.adapter = adapter
+        }
+    }
 }
 
