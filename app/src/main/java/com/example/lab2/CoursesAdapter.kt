@@ -17,11 +17,11 @@ import okhttp3.Request
 import java.net.URL
 
 
-class CoursesAdapter(context: Context, datalist: List<DataItem>, listener: Listener) : RecyclerView.Adapter<CoursesAdapter.CourseViewHolder>() {
+class CoursesAdapter(datalist: List<DataItem>, listener: Listener) : RecyclerView.Adapter<CoursesAdapter.CourseViewHolder>() {
 
     private var dataList: List<DataItem> = datalist
     private var listener = listener
-    private var context = context
+    //private var context = context
     //private var dataList: List<String> = datalist
 
     override fun getItemCount(): Int {

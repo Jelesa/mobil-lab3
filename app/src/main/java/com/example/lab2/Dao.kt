@@ -21,15 +21,9 @@ interface Dao {
     @Query(value = "select * from recipes_categories where name_category = :name")
     fun getAllRecipesCategory(name: String? = "Chicken"): List<RecipesCategories>
 
-    @Query("SELECT count(id) FROM categories")
-    fun getCountRecipesCategories(): Int
-
     @Insert(entity = Recipe::class)
     fun insertRecipes(recipe: Recipe)
 
     @Query("SELECT * FROM recipes where id = :id")
     fun getRecipeById(id: String): Recipe
-
-    @Query("SELECT count(id) FROM categories")
-    fun getCountRecipes(): Int
 }

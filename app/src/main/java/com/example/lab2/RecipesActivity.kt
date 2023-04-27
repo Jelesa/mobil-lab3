@@ -6,6 +6,9 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
@@ -15,107 +18,21 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.URL
 
-class RecipesActivity : AppCompatActivity(), CoursesAdapter.Listener {
+class RecipesActivity : AppCompatActivity(){
 
-    lateinit var recipes: RecyclerView
-    lateinit var database: AppDatabase
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_recipes)
 
         val name = intent.getStringExtra("name")
 
-        this.recipes = findViewById(R.id.recyclerViewRecipers)
-        this.recipes.layoutManager = LinearLayoutManager(this)
-
-        this.database = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "recipe_database"
-        ).build()
-
-        if (Network().isNetworkAvailable(this))
-        {
-            var task: GetDataRecipes = GetDataRecipes(this, this)
-            task.execute(name)
+        if (savedInstanceState == null) {
+            val bundle = bundleOf("nameRecipes" to name)
+            supportFragmentManager.commit {
+                setReorderingAllowed(true)
+                add<FragmentRecipes>(R.id.fragment_container_view_recipes, args = bundle)
+            }
         }
-        else
-        {
-            var getRecipes = GetDataRecipesCategoriesDatabase(this, this)
-            getRecipes.execute(name)
-        }
+
+        setContentView(R.layout.activity_recipes)
     }
-
-    override fun onCLick(dataItem: DataItem) {
-        val intent = Intent(this, ContentRecipeActivity::class.java)
-        intent.putExtra("name", dataItem.id)
-        startActivity(intent)
-    }
-
-    class GetDataRecipes(private var activity: RecipesActivity?, private var context: Context) : AsyncTask<String, Void, MutableList<DataItem>>() {
-        override fun doInBackground(vararg p0: String): MutableList<DataItem> {
-            var resultJSON: String? = null;
-            var client: OkHttpClient = OkHttpClient();
-
-            try {
-                // Create URL
-                val url = URL("https://www.themealdb.com/api/json/v1/1/filter.php?c=" + p0[0])   // Build request
-                val request = Request.Builder().url(url).build()
-                // Execute request
-                val response = client.newCall(request).execute()
-                resultJSON = response.body?.string()
-            }
-            catch(err:Error) {
-                print("Error when executing get request: "+err.localizedMessage)
-            }
-
-            var result: MutableList<DataItem>  = mutableListOf()
-
-            try {
-                val obj = JSONObject(resultJSON)
-                val categoriesArray = obj.getJSONArray("meals")
-                for (i in 0 until categoriesArray.length()) {
-                    val categoryInfo = categoriesArray.getJSONObject(i)
-                    result.add(DataItem(categoryInfo.getString("idMeal"),
-                                        categoryInfo.getString("strMeal"),
-                                        categoryInfo.getString("strMealThumb")))
-                }
-            }
-            catch (e: JSONException) {
-                e.printStackTrace()
-            }
-
-            return result
-        }
-
-        override fun onPostExecute(result:  MutableList<DataItem>) {
-            super.onPostExecute(result)
-            val adapter: CoursesAdapter = CoursesAdapter(this.context!!, result, this.activity!!)
-            this.activity!!.recipes.adapter = adapter
-        }
-    }
-
-    class GetDataRecipesCategoriesDatabase(private var activity: RecipesActivity?, private  var context: Context?): AsyncTask<String, Void, MutableList<DataItem>>()
-    {
-        override fun doInBackground(vararg params: String): MutableList<DataItem> {
-            var recipesCategoriesList: List<RecipesCategories> = listOf()
-            recipesCategoriesList = this.activity!!.database.getDao().getAllRecipesCategory(params[0])
-
-            var result: MutableList<DataItem> = mutableListOf()
-
-            for (i in 0 until recipesCategoriesList.size)
-            {
-                result.add(DataItem(recipesCategoriesList[i].id, recipesCategoriesList[i].nameRecipe, recipesCategoriesList[i].src))
-            }
-
-            return result
-        }
-
-        override fun onPostExecute(result: MutableList<DataItem>) {
-            super.onPostExecute(result)
-
-            val adapter: CoursesAdapter = CoursesAdapter(this.context!!, result, this.activity!!)
-            this.activity?.recipes?.adapter = adapter
-        }
-    }
-
 }

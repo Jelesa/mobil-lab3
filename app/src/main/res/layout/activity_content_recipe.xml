@@ -8,56 +8,12 @@
     android:background="#DAD3A4"
     android:orientation="vertical">
 
-    <ScrollView
+    <androidx.fragment.app.FragmentContainerView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/fragment_container_view_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:name="com.example.lab2.FragmentContentRecipe" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingRight="15dp"
-            android:paddingLeft="15dp">
 
-            <TextView
-                android:id="@+id/textName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="30dp"
-                android:gravity="center_horizontal"
-                android:background="@drawable/cornes"
-                android:elevation="5dp"
-                android:layout_marginTop="10dp"/>
-
-            <ImageView
-                android:id="@+id/photoDishes"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/cornes"
-                android:elevation="5dp"
-                android:scaleType="center" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Recipe"
-                android:textSize="30dp"
-                android:gravity="center_horizontal"
-                android:background="@drawable/cornes"
-                android:elevation="5dp"/>
-            <TextView
-                android:id="@+id/textRecieps"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="23dp"
-                android:background="@drawable/cornes"
-                android:elevation="5dp"
-                android:layout_marginTop="10dp"
-                android:padding="5dp"/>
-
-        </LinearLayout>
-    </ScrollView>
 </LinearLayout>
