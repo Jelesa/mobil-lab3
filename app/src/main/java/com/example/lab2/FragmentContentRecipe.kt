@@ -23,14 +23,14 @@ class FragmentContentRecipe : Fragment() {
     lateinit var textContent: TextView
     lateinit var imagePhoto: ImageView
     lateinit var textName: TextView
-    lateinit var database: AppDatabase
-    lateinit var id: String
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         this.id = getArguments()?.getString("idRecipe").toString()
     }
+    lateinit var database: AppDatabase
+
+    lateinit var id: String
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(

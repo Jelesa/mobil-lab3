@@ -33,11 +33,12 @@ class ContentRecipeActivity : AppCompatActivity() {
             val bundle = bundleOf("idRecipe" to id)
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
-                add<FragmentContentRecipe>(R.id.fragment_container_view_content, args = bundle)
+                add<FragmentContentRecipe>(R.id.fragmentcontent, args = bundle)
             }
         }
 
         setContentView(R.layout.activity_content_recipe)
 
     }
+
 }

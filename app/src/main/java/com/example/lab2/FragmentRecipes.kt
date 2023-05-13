@@ -21,12 +21,11 @@ class FragmentRecipes : Fragment(), CoursesAdapter.Listener {
 
     lateinit var recipes: RecyclerView
     lateinit var database: AppDatabase
-    lateinit var name: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        this.name = getArguments()?.getString("nameRecipes").toString()
+        //this.name = getArguments()?.getString("nameRecipes").toString()
     }
 
 
@@ -35,9 +34,16 @@ class FragmentRecipes : Fragment(), CoursesAdapter.Listener {
         savedInstanceState: Bundle?
     ): View? {
 
-        var view = inflater.inflate(R.layout.fragment_recipes, container, false)
 
+        var view = inflater.inflate(R.layout.fragment_recipes, container, false)
         this.recipes = view.findViewById(R.id.recyclerViewRecipers)
+        return view
+    }
+
+    fun mydata()
+    {
+        val name = arguments?.getString("nameRecipes").toString()
+
         this.recipes.layoutManager = LinearLayoutManager(activity)
 
         this.database = activity?.let {
@@ -50,15 +56,13 @@ class FragmentRecipes : Fragment(), CoursesAdapter.Listener {
         if (Network().isNetworkAvailable(activity))
         {
             var task: GetDataRecipes = GetDataRecipes(this)
-            task.execute(this.name)
+            task.execute(name)
         }
         else
         {
             var getRecipes = GetDataRecipesCategoriesDatabase(this)
-            getRecipes.execute(this.name)
+            getRecipes.execute(name)
         }
-
-        return view
     }
 
     companion object {

@@ -8,12 +8,13 @@
     android:background="#DAD3A4"
     android:orientation="vertical">
 
-    <androidx.fragment.app.FragmentContainerView
+    <fragment
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/fragment_container_view_content"
+        android:id="@+id/fragmentcontent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.example.lab2.FragmentContentRecipe" />
+        android:name="com.example.lab2.FragmentContentRecipe"
+        tools:layout="@layout/fragment_content_recipe"/>
 
 
 </LinearLayout>
