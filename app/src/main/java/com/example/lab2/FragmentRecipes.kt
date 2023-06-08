@@ -3,6 +3,7 @@ package com.example.lab2
 import android.content.Context
 import android.content.Intent
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -74,6 +75,7 @@ class FragmentRecipes : Fragment(), CoursesAdapter.Listener {
         intent.putExtra("name", dataItem.id)
         startActivity(intent)
     }
+
 
     class GetDataRecipes(private var activity: FragmentRecipes?) : AsyncTask<String, Void, MutableList<DataItem>>() {
         override fun doInBackground(vararg p0: String): MutableList<DataItem> {
